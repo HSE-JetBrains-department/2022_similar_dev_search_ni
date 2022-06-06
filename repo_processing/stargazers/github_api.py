@@ -16,7 +16,7 @@ def rate_limit_sleep(g: Github) -> None:
     """
 
     search_rate_limit = g.get_rate_limit().search
-    print('search remaining: {}'.format(search_rate_limit.remaining))
+    print("search remaining: {}".format(search_rate_limit.remaining))
     reset_timestamp = calendar.timegm(search_rate_limit.reset.timetuple())
     # add 10 seconds to be sure the rate limit has been reset
     sleep_time = reset_timestamp - calendar.timegm(time.gmtime()) + 10

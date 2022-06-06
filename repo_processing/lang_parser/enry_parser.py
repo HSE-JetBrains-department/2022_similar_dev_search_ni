@@ -46,5 +46,5 @@ def process_list(list_commits: List[Dict]) -> List[Dict]:
     """
 
     for change in list_commits:
-        change['lang'] = get_languages_method(change['path'])
+        change["lang"] = get_languages_method(change["path"]) if "path" in change.keys() else []
     return list_commits
