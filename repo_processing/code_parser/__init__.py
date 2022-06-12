@@ -1,7 +1,7 @@
 import os
 
-from repo_processing import parser_dir
 
+parser_dir = "../parserdir"
 
 if not os.path.exists(parser_dir):
     os.makedirs(parser_dir)

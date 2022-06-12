@@ -7,9 +7,10 @@ from dulwich.diff_tree import TreeChange
 from dulwich.objects import Blob
 from dulwich.porcelain import clone
 from dulwich.repo import Repo
+
 from typing import Dict, List, Tuple
 
-from repo_processing import repo_clones_dir
+from extractor import repo_clones_dir
 
 
 def count_diff(blob_old: Blob, blob_new: Blob) -> Tuple[int, int]:
@@ -25,9 +26,9 @@ def count_diff(blob_old: Blob, blob_new: Blob) -> Tuple[int, int]:
     diffs = list(unified_diff(blob_old.data.decode().splitlines(), blob_new.data.decode().splitlines()))
     add, delete = 0, 0
     for diff in diffs:
-        if diff[0] == '+':
+        if diff[0] == "+":
             add += 1
-        elif diff[0] == '-':
+        elif diff[0] == "-":
             delete += 1
     return add, delete
 
@@ -46,17 +47,17 @@ def process_change_diff(change: TreeChange, commit_dict: Dict, repo: Repo, path:
     # Added, deleted, modified
     try:
         if change.old.sha is None:
-            commit_dict['add'] = len(repo[change.new.sha].data.decode())
-            commit_dict['blob_id'] = change.new.sha.decode()
-            commit_dict['path'] = path + "/" + change.new.path.decode()
+            commit_dict["add"] = len(repo[change.new.sha].data.decode())
+            commit_dict["blob_id"] = change.new.sha.decode()
+            commit_dict["path"] = path + "/" + change.new.path.decode()
         elif change.new.sha is None:
-            commit_dict['delete'] = len(repo[change.old.sha].data.decode())
-            commit_dict['blob_id'] = change.old.sha.decode()
-            commit_dict['path'] = path + "/" + change.old.path.decode()
+            commit_dict["delete"] = len(repo[change.old.sha].data.decode())
+            commit_dict["blob_id"] = change.old.sha.decode()
+            commit_dict["path"] = path + "/" + change.old.path.decode()
         else:
-            commit_dict['add'], commit_dict['delete'] = count_diff(repo[change.old.sha], repo[change.new.sha])
-            commit_dict['blob_id'] = change.new.sha.decode()
-            commit_dict['path'] = path + "/" + change.new.path.decode()
+            commit_dict["add"], commit_dict["delete"] = count_diff(repo[change.old.sha], repo[change.new.sha])
+            commit_dict["blob_id"] = change.new.sha.decode()
+            commit_dict["path"] = path + "/" + change.new.path.decode()
     except (UnicodeDecodeError, KeyError) as e:
         pass
     return commit_dict
@@ -74,7 +75,7 @@ def process_walker(repo: Repo) -> List[Dict]:
     walker = repo.get_walker()
     multiple_commits = list()
     for entry in walker:
-        commit_dict = {'author': entry.commit.author.decode(), 'commit_id': entry.commit.id.decode()}
+        commit_dict = {"author": entry.commit.author.decode(), "commit_id": entry.commit.id.decode()}
         for change in entry.changes():
             if type(change) is not TreeChange:  # modify
                 for ch in change:
@@ -93,9 +94,9 @@ def clone_or_instantiate(path: str) -> Repo:
 
     :return: Repository instance.
     """
-    repo_name = path[path.rfind('/') + 1:]
+    repo_name = path[path.rfind("/") + 1:]
     pth = f"{repo_clones_dir}/{repo_name}"
-    return Repo(pth) if os.path.exists(pth) else clone(pth)
+    return Repo(pth) if os.path.exists(pth) else clone(path, target=pth)
 
 
 def process_repo(path: str) -> List[Dict]:
@@ -118,7 +119,7 @@ def parse_repos_list(url_file: str = "https://gist.githubusercontent.com/EgorBu/
     :return: Returns list of dictionaries with values: url, invitation, stars, language.
     """
     r = requests.get(url_file)
-    lines = r.text.replace('\t', '').split('\n')[1:]
+    lines = r.text.replace("\t", "").split("\n")[1:]
     list_repos = list()
     for i in range(0, len(lines), 4):
         d = {
@@ -132,7 +133,7 @@ def parse_repos_list(url_file: str = "https://gist.githubusercontent.com/EgorBu/
     return list_repos
 
 
-def save_file(multiple_commits: List[Dict], output_path: str = '') -> bool:
+def save_file(multiple_commits: List[Dict], output_path: str = "") -> bool:
     """
     The function to save the data into file in output_path.
     Returns True if the info was successfully appended to file, False if the error occurred.
@@ -144,10 +145,10 @@ def save_file(multiple_commits: List[Dict], output_path: str = '') -> bool:
     """
     json_str = json.dumps(multiple_commits)
     try:
-        with open(output_path, 'a') as output_file:
+        with open(output_path, "a") as output_file:
             output_file.write(json_str)
     except IOError as e:
-        print(f'Failed to write to file {output_path}. {e}')
+        print(f"Failed to write to file {output_path}. {e}")
         return False
 
     return True

@@ -1,14 +1,15 @@
 from typing import Dict, List
 
-from repo_processing.extractor.extract import clone_or_instantiate
-from repo_processing import parser_dir
-from repo_processing.lang_parser.enry_parser import get_content
+from extractor import repo_clones_dir
+from extractor.extract import clone_or_instantiate
+from code_parser import parser_dir
+from lang_parser.enry_parser import get_content
 
 from tree_sitter import Language, Parser, Tree
 from tree_sitter import Node
 
 # query of imports, used methods, classes
-java_imports_used_methods_query_string = """
+JAVA_IMPORTS_USED_METHODS_QUERY_STRING = """
 (import_declaration (scoped_identifier (identifier)) @name)
 (import_declaration (identifier) @name)
 (import_declaration ((scoped_identifier (identifier)) (asterisk)) @name)
@@ -18,7 +19,7 @@ java_imports_used_methods_query_string = """
 """
 
 # query of names of created packages, classes, interfaces, methods, arguments, fields
-java_names_query = """
+JAVA_NAMES_QUERY_STRING = """
 (package_declaration (scoped_identifier (identifier)) @name)
 (class_declaration name: (identifier) @name)
 (interface_declaration name: (identifier) @name)
@@ -28,7 +29,7 @@ java_names_query = """
 """
 
 # query of imports, called functions
-python_imports_used_methods_query_string = """
+PYTHON_IMPORTS_USED_METHODS_QUERY_STRING = """
 (import_from_statement (dotted_name (identifier)) @dotted_name)
 (import_statement (dotted_name (identifier)) @dotted_name)
 (aliased_import (dotted_name (identifier)) @dotted_name)
@@ -36,14 +37,14 @@ python_imports_used_methods_query_string = """
 """
 
 # query of names of classes, functions, fields
-python_names_query_string = """
+PYTHON_NAMES_QUERY_STRING = """
 (class_definition name: (identifier) @name)
 (function_definition name: (identifier) @function.def)
 (expression_statement (assignment left: (identifier) @name)) 
 """
 
 # query of imports, called functions
-js_imports_used_methods_query_string = """
+JS_IMPORTS_USED_METHODS_QUERY_STRING = """
 (expression_statement (member_expression) @name)
 (expression_statement (call_expression (member_expression (call_expression (import) (arguments (string (string_fragment) @name))) 
     (property_identifier)) (arguments (arrow_function (formal_parameters (identifier) @name) (statement_block)))))
@@ -55,7 +56,7 @@ js_imports_used_methods_query_string = """
 """
 
 # query of names of classes, functions, fields
-js_names_query_string = """
+JS_NAMES_QUERY_STRING = """
 (assignment_expression (identifier) @name) (variable_declaration (variable_declarator (
 identifier) @name)) (lexical_declaration (variable_declarator (identifier) @name)) (expression_statement (
 call_expression (member_expression (call_expression (import) (arguments (string (string_fragment) @name))) (
@@ -78,46 +79,46 @@ def setup_tree_sitter_parser() -> None:
     Language.build_library(
         f"{parser_dir}/build/my-languages.so",
         [
-            "tree-sitter-python",
-            "tree-sitter-javascript",
-            "tree-sitter-java"
+            f"{repo_clones_dir}/tree-sitter-python",
+            f"{repo_clones_dir}/tree-sitter-javascript",
+            f"{repo_clones_dir}/tree-sitter-java"
         ]
     )
 
 
-def process_query(query_str, LANGUAGE: Language, code: bytes, root_node: Node) -> List[str]:
+def process_query(query_str, language: Language, code: bytes, root_node: Node) -> List[str]:
     """
     Processes query using query_str for LANGUAGE.
     :param query_str: query string to extract info.
-    :param LANGUAGE: Language instance.
+    :param language: Language instance.
     :param code: Part of code represented in bytes(str) utf8 encoding.
     :param root_node: Root of the parsed tree.
 
     :return: Returns list of queried results.
     """
-    query = LANGUAGE.query(query_str)
+    query = language.query(query_str)
     return list(set([code[x[0].start_byte: x[0].end_byte].decode() for x in query.captures(root_node)]))
 
 
-def process_tree_sitter(LANGUAGE: str, code: bytes, tree) -> Dict:
+def process_tree_sitter(language: str, code: bytes, tree) -> Dict:
     """
     Process lines of code returning dict
-    :param LANGUAGE: Language instance.
+    :param language: Language instance.
     :param code: Part of code represented in bytes(str) utf8 encoding.
     :param tree: Parsed tree.
 
     :return: Returns dict with list of imports and names.
     """
 
-    if LANGUAGE == "unknown":
+    if language == "unknown":
         return {"imports": [], "names": []}
 
-    parse_lang = Language(f"{parser_dir}/build/my-languages.so", LANGUAGE.lower())
+    parse_lang = Language(f"{parser_dir}/build/my-languages.so", language.lower())
 
     choice = {
-        "java": [java_imports_used_methods_query_string, java_names_query],
-        "python": [python_imports_used_methods_query_string, python_names_query_string],
-        "javascript": [js_imports_used_methods_query_string, js_names_query_string]
+        "java": [JAVA_IMPORTS_USED_METHODS_QUERY_STRING, JAVA_NAMES_QUERY_STRING],
+        "python": [PYTHON_IMPORTS_USED_METHODS_QUERY_STRING, PYTHON_NAMES_QUERY_STRING],
+        "javascript": [JS_IMPORTS_USED_METHODS_QUERY_STRING, JS_NAMES_QUERY_STRING]
     }
 
     imports_and_names = {
@@ -140,7 +141,10 @@ def parse_code(code: bytes, parser: Parser) -> Tree:
     return parser.parse(code)
 
 
-def go_parse(language: str, code: bytes):
+def go_parse(language: str, code: bytes) -> Dict:
+    """
+    Creates Parser instance and processing code parsing.
+    """
     parser = Parser()
     parser.set_language(Language(f"{parser_dir}/build/my-languages.so", language.lower()))
 
@@ -167,19 +171,3 @@ def parse_file(languages: List[str], path: str) -> Dict:
         return go_parse(language, code)
 
     return {"imports": [], "names": []}
-
-
-parsed_nodes = list()
-
-
-def dfs_traverse_tree(root: Node) -> None:
-    """
-    Recursive DFS method for traversing parse tree
-    given by tree-sitter library and filling parsed_nodes list by with each node.
-
-    :param root: root node of parsed tree.
-    """
-
-    parsed_nodes.append(root)
-    for child in root.children:
-        dfs_traverse_tree(child)

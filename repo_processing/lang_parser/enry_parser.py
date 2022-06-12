@@ -13,7 +13,7 @@ def get_content(path: str) -> str:
     :return: Returns read lines.
     """
 
-    with open(path, 'r') as fp:
+    with open(path, "r") as fp:
         return fp.read()
 
 

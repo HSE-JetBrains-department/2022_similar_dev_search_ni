@@ -2,22 +2,21 @@ import pytest
 
 from repo_processing.code_parser.tree_sitter_parser import go_parse
 
-py_names_entries = [
+PY_NAMES_ENTRIES = [
     {"code": bytes(""" class A():
 ss = 5
 a1 = a1 """, "utf8"), "expected_names": ["A", "ss", "a1"]},
-    {"code": bytes(
-        """ class A():
+    {"code": bytes(""" class A():
 def foo():
     vall = 5
     if bar:
-        baz()""", "utf8"), "expected_names": ["foo", "vall"]},
+        baz()""", "utf8"), "expected_names": ["A", "foo", "vall"]},
     {"code": bytes(""" class A():
 class B():
-class C(): """, "utf8"), "expected_names": ["foo", "vall"]}
+class C(): """, "utf8"), "expected_names": ["A", "B", "C"]}
 ]
 
-py_imports_entries = [
+PY_IMPORTS_ENTRIES = [
     {"code": bytes(""" import sys1
 from a import * """, "utf8"), "expected_imports": ["sys1", "a"]},
     {"code": bytes(""" from s import sys
@@ -29,21 +28,27 @@ import a1.b.c """, "utf8"),
 ]
 
 
-@pytest.mark.parametrize("code, expected_names", [(py_names_entries[0]["code"], py_names_entries[0]["expected_names"]),
-                                                  (py_names_entries[1]["code"], py_names_entries[1]["expected_names"])])
+@pytest.mark.parametrize("code, expected_names", [(PY_NAMES_ENTRIES[0]["code"], PY_NAMES_ENTRIES[0]["expected_names"]),
+                                                  (PY_NAMES_ENTRIES[1]["code"], PY_NAMES_ENTRIES[1]["expected_names"])])
 def test_python_variables(code, expected_names):
+    """
+    Testing go_parse function parses names of fields, variables, functions correctly for Python language.
+    """
     assert go_parse("python", code)["names"] == list(set(expected_names))
 
 
 @pytest.mark.parametrize("code, expected_imports",
-                         [(py_imports_entries[0]["code"], py_imports_entries[0]["expected_imports"]),
-                          (py_imports_entries[1]["code"], py_imports_entries[1]["expected_imports"]),
-                          (py_imports_entries[2]["code"], py_imports_entries[2]["expected_imports"])])
+                         [(PY_IMPORTS_ENTRIES[0]["code"], PY_IMPORTS_ENTRIES[0]["expected_imports"]),
+                          (PY_IMPORTS_ENTRIES[1]["code"], PY_IMPORTS_ENTRIES[1]["expected_imports"]),
+                          (PY_IMPORTS_ENTRIES[2]["code"], PY_IMPORTS_ENTRIES[2]["expected_imports"])])
 def test_python_imports(code, expected_imports):
-    assert go_parse("python", code)["imports"] == list(set(expected_imports))
+    """
+    Testing go_parse function parses used imports, invoked methods and classes correctly for Python language.
+    """
+    assert sorted(go_parse("python", code)["imports"]) == sorted(list(set(expected_imports)))
 
 
-java_names_entries = [
+JAVA_NAMES_ENTRIES = [
     {"code": bytes("""
 package test;
 package test2.tt;
@@ -67,7 +72,7 @@ public class ArrayListInsertElementExample {
 """, "utf8"), "expected_names": ["ArrayListInsertElementExample", "valic", "main", "args", "fives", "tens"]}
 ]
 
-java_imports_entries = [
+JAVA_IMPORTS_ENTRIES = [
     {"code": bytes("""
 aListNumbers.add("One");
 aListNumbers.add("Two");
@@ -89,40 +94,46 @@ import java3.util3.new.*;
 
 
 @pytest.mark.parametrize("code, expected_names",
-                         [(java_names_entries[0]["code"], java_names_entries[0]["expected_names"]),
-                          (java_names_entries[1]["code"], java_names_entries[1]["expected_names"]),
-                          (java_names_entries[2]["code"], java_names_entries[2]["expected_names"])])
+                         [(JAVA_NAMES_ENTRIES[0]["code"], JAVA_NAMES_ENTRIES[0]["expected_names"]),
+                          (JAVA_NAMES_ENTRIES[1]["code"], JAVA_NAMES_ENTRIES[1]["expected_names"]),
+                          (JAVA_NAMES_ENTRIES[2]["code"], JAVA_NAMES_ENTRIES[2]["expected_names"])])
 def test_java_variables(code, expected_names):
-    assert go_parse("java", code)["names"] == list(set(expected_names))
+    """
+    Testing go_parse function parses names of fields, variables, functions correctly for Java language.
+    """
+    assert sorted(go_parse("java", code)["names"]) == sorted(list(set(expected_names)))
 
 
 @pytest.mark.parametrize("code, expected_imports",
-                         [(java_imports_entries[0]["code"], java_imports_entries[0]["expected_imports"]),
-                          (java_names_entries[1]["code"], java_imports_entries[1]["expected_imports"]),
-                          (java_imports_entries[2]["code"], java_imports_entries[2]["expected_imports"])])
+                         [(JAVA_IMPORTS_ENTRIES[0]["code"], JAVA_IMPORTS_ENTRIES[0]["expected_imports"]),
+                          (JAVA_IMPORTS_ENTRIES[1]["code"], JAVA_IMPORTS_ENTRIES[1]["expected_imports"]),
+                          (JAVA_IMPORTS_ENTRIES[2]["code"], JAVA_IMPORTS_ENTRIES[2]["expected_imports"])])
 def test_java_imports(code, expected_imports):
-    assert go_parse("java", code)["imports"] == list(set(expected_imports))
+    """
+    Testing go_parse function parses used imports, invoked methods and classes correctly for Java language.
+    """
+    assert sorted(go_parse("java", code)["imports"]) == sorted(list(set(expected_imports)))
 
 
-js_names_entries = [
+JS_NAMES_ENTRIES = [
     {"code": bytes("""
 a = 0;
 var b = 0;
 const c = 0;
 let d = 0;
-""", "utf8"), "expected_names": ['a', 'b', 'c', 'd']},
+""", "utf8"), "expected_names": ["a", "b", "c", "d"]},
     {"code": bytes("""
 class Foo {
 }
 """, "utf8"), "expected_names": ["Foo"]}
 ]
 
-js_imports_entries = [
+JS_IMPORTS_ENTRIES = [
     {"code": bytes("""
 import("a");
 import("a").then((m) => {});
 import.meta.url.af;
-""", "utf8"), "expected_imports": ['a', 'm', "import.meta.url.af"]},
+""", "utf8"), "expected_imports": ["a", "m", "import.meta.url.af"]},
     {"code": bytes("""
 import "module-name8";
 import defaultMember from "module-name1";
@@ -135,24 +146,28 @@ import { member1 , member2 as alias2 } from "module-name5";
 import defaultMember1, { member1, member2 as alias2 } from "module-name6";
 import defaultMember2, * as name from "module-name7";
 import { member1 , member2 as alias2, } from "module-name9";
-""", "utf8"), "expected_imports": ["member", "name", "module-name7", "module-name5", "alias2", "defaultMember1",
-                                   '"module-name6"',
-                                   "member2 as alias2", "module-name4", "defaultMember2", '"module-name7"',
-                                   "module-name9",
-                                   "member2", "module-name6", "member1", "module-name3"]},
+""", "utf8"), "expected_imports": ['"module-name6"', 'name', 'module-name7', 'member', 'defaultMember2', 'defaultMember1',
+                                   'module-name6', '"module-name7"', 'member2', 'module-name5', 'alias2', 'module-name9',
+                                   'member2 as alias2', 'module-name3', 'module-name4', 'member1']},
 ]
 
 
 @pytest.mark.parametrize("code, expected_names",
-                         [(js_names_entries[0]["code"], js_names_entries[0]["expected_names"]),
-                          (js_names_entries[1]["code"], js_names_entries[1]["expected_names"])])
+                         [(JS_NAMES_ENTRIES[0]["code"], JS_NAMES_ENTRIES[0]["expected_names"]),
+                          (JS_NAMES_ENTRIES[1]["code"], JS_NAMES_ENTRIES[1]["expected_names"])])
 def test_js_variables(code, expected_names):
-    assert go_parse("javascript", code)["names"] == list(set(expected_names))
+    """
+    Testing go_parse function parses names of fields, variables, functions correctly for JavaScript language.
+    """
+    assert sorted(go_parse("javascript", code)["names"]) == sorted(list(set(expected_names)))
 
 
 @pytest.mark.parametrize("code, expected_imports",
-                         [(js_imports_entries[0]["code"], js_imports_entries[0]["expected_imports"]),
-                          (js_imports_entries[1]["code"], js_imports_entries[1]["expected_imports"]),
-                          (js_imports_entries[2]["code"], js_imports_entries[2]["expected_imports"])])
+                         [(JS_IMPORTS_ENTRIES[0]["code"], JS_IMPORTS_ENTRIES[0]["expected_imports"]),
+                          (JS_IMPORTS_ENTRIES[1]["code"], JS_IMPORTS_ENTRIES[1]["expected_imports"]),
+                          (JS_IMPORTS_ENTRIES[2]["code"], JS_IMPORTS_ENTRIES[2]["expected_imports"])])
 def test_js_imports(code, expected_imports):
-    assert go_parse("javascript", code)["imports"] == list(set(expected_imports))
+    """
+    Testing go_parse function parses used imports, invoked methods and classes correctly for JavaScript language.
+    """
+    assert sorted(go_parse("javascript", code)["imports"]) == sorted(list(set(expected_imports)))
