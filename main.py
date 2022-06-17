@@ -53,7 +53,7 @@ def parse_repos(output_path: str) -> None:
         mapped_repos_list = process_list(mapped_repos_list)  # enry
         mapped_repos_list = apply_parsing(mapped_repos_list)  # tree-sitter
 
-        dict_by_author = reformat_commits_info(mapped_repos_list)
+        reformat_commits_info(mapped_repos_list)  # to simdevsearch
 
         # Saving to file named as current repo.
         path = el["url"]
