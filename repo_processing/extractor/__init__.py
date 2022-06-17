@@ -1,7 +1,7 @@
 import os
 
 
-repo_clones_dir = "../clonedrepos"
+REPO_CLONES_DIR = "clonedrepos"
 
-if not os.path.exists(repo_clones_dir):
-    os.makedirs(repo_clones_dir)
+if not os.path.exists(REPO_CLONES_DIR):
+    os.makedirs(REPO_CLONES_DIR)

@@ -42,9 +42,11 @@ def process_list(list_commits: List[Dict]) -> List[Dict]:
 
     :param list_commits: List of mapped commits info.
 
-    :return:  List of dictionaries that adds to given dicts a key with languages.
+    :return:  List of dictionaries that adds to given dicts a key with
+    languages.
     """
 
     for change in list_commits:
-        change["lang"] = get_languages_method(change["path"]) if "path" in change.keys() else []
+        change["lang"] = get_languages_method(
+            change["path"]) if "path" in change.keys() else []
     return list_commits

@@ -7,12 +7,11 @@ import tempfile
 from repo_processing.lang_parser.enry_parser import get_languages_method
 from tests.lang_parser import test_dir
 
-
 PY_CODE = b"""import re
 
 
 for test_string in ['555-1212', 'ILL-EGAL']:
-\tif re.match(r'^\d{3}-\d{4}$', test_string):
+\tif re.match(r'^$', test_string):
 \t\tprint(test_string, 'is a valid US local phone number')
 \telse:
 \t\tprint(test_string, 'rejected')"""
@@ -75,12 +74,14 @@ def fixture_session():
         os.removedirs(test_dir)
 
 
-@pytest.mark.parametrize("filename, code, expected_list", [("filepy.py", PY_CODE, ["Python"]),
-                                                           ("filej.java", JAVA_CODE, ["Java"]),
-                                                           ("filejs.js", JS_CODE, ["JavaScript"])])
+@pytest.mark.parametrize("filename, code, expected_list",
+                         [("filepy.py", PY_CODE, ["Python"]),
+                          ("filej.java", JAVA_CODE, ["Java"]),
+                          ("filejs.js", JS_CODE, ["JavaScript"])])
 def test_enry_code(filename: str, code: bytes, expected_list: List[str]):
     """
-    Testing get_languages_method function of enry_parser file parses file correctly returning
+    Testing get_languages_method function of enry_parser file parses file
+    correctly returning
     right list of languages.
     """
     setup_file(code, filename)

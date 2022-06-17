@@ -4,13 +4,13 @@ from collections import Counter
 
 from github import Github, GithubException, RateLimitExceededException
 
-
 global_counter = Counter()
 
 
 def rate_limit_sleep(github_instance: Github) -> None:
     """
-    Function starts sleeping when the RateLimitExceededException occurred and search_rate_limit reached.
+    Function starts sleeping when the RateLimitExceededException occurred
+    and search_rate_limit reached.
 
     :param github_instance: GitHub
     """
@@ -18,13 +18,12 @@ def rate_limit_sleep(github_instance: Github) -> None:
     search_rate_limit = github_instance.get_rate_limit().search
     print("search remaining: {}".format(search_rate_limit.remaining))
     reset_timestamp = calendar.timegm(search_rate_limit.reset.timetuple())
-    # add 10 seconds to be sure the rate limit has been reset
-    sleep_time = reset_timestamp - calendar.timegm(time.gmtime()) + 10
     # time.sleep(sleep_time)
     time.sleep(max(0, reset_timestamp - calendar.timegm(time.gmtime())))
 
 
-def process_stargazers(github_token: str, current_repo_name: str, stars_limit: int = 25,
+def process_stargazers(github_token: str, current_repo_name: str,
+                       stars_limit: int = 100,
                        per_page: int = 100) -> Counter:
     """
     Function processes all the stargazers of the current_repo_name repository.
@@ -33,7 +32,8 @@ def process_stargazers(github_token: str, current_repo_name: str, stars_limit: i
     :param github_token: GitHub API token.
     :param per_page: per_page param.
     :param current_repo_name: repository name in GitHub.
-    :param stars_limit: filtering parameter to process stargazers that starred less than stars_limit repos.
+    :param stars_limit: filtering parameter to process stargazers that starred
+    less than stars_limit repos.
 
     :return: Counter of names of repositories.
     """
@@ -57,9 +57,9 @@ def process_stargazers(github_token: str, current_repo_name: str, stars_limit: i
                     continue
                 global_counter[repo_starred.full_name] += 1
                 starred_cntr += 1
-        except RateLimitExceededException as e:
+        except RateLimitExceededException:
             rate_limit_sleep(github_instance)
-        except GithubException as e:
+        except GithubException:
             continue
 
     return global_counter

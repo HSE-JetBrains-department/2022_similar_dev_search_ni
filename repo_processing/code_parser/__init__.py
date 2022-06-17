@@ -1,7 +1,7 @@
 import os
 
 
-parser_dir = "../parserdir"
+PARSER_DIR = "parserdir"
 
-if not os.path.exists(parser_dir):
-    os.makedirs(parser_dir)
+if not os.path.exists(PARSER_DIR):
+    os.makedirs(PARSER_DIR)
