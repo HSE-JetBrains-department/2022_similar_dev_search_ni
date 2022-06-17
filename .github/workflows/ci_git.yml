@@ -31,11 +31,19 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.8"
-    - name: Test code with pytest
+    - name: Setup
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: Extractor test
+      run: |
         python3 -m pytest tests/extractor/test_extract.py
+    - name: Tree sitter test
+      run: |
         python3 -m pytest tests/code_parser/test_tree_sitter_parser.py
+    - name: Enry test
+      run: |
         python3 -m pytest tests/lang_parser/test_enry_parser.py
+    - name: GithubApi test
+      run: |
         python3 -m pytest test_github_api.py --key ${{ secrets.GITHUB_TOKEN }}
