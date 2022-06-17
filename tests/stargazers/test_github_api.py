@@ -121,8 +121,6 @@ result_counter = Counter({"ADKosm/lsml-2022-public": 1,
                           "whitelext/dota_hunter": 1,
                           "zawadz88/NavigationComponentPlayground": 1})
 
-API_KEY = "API_KEY"
-
 
 @pytest.mark.parametrize("url, expected_counter",
                          [("vk-education/android-samples", result_counter)])
@@ -133,6 +131,10 @@ def test_stargazers_returns_right_counter(url: str,
     Tests process_stargazers function is returning Counter type and that
     returns right data for testing repository
     example with different urls.
+
+    :param url: URL to repository.
+    :param expected_counter: Expected result.
+    :param key: GitHub API key.
     """
 
     parse = process_stargazers(github_token=key, current_repo_name=url)
