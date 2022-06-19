@@ -109,9 +109,12 @@ def clone_or_instantiate(path: str) -> Repo:
 
     :return: Repository instance.
     """
-    repo_name = path[path.rfind("/") + 1:]
-    pth = f"{REPO_CLONES_DIR}/{repo_name}"
-    return Repo(pth) if os.path.exists(pth) else clone(path, target=pth)
+    tmp = path.split("/")
+    if not os.path.exists(f"{REPO_CLONES_DIR}/{tmp[3]}"):
+        os.makedirs(f"{REPO_CLONES_DIR}/{tmp[3]}")
+    # repo_name = f"{tmp[3]}/{tmp[4]}"
+    pth = f"{REPO_CLONES_DIR}/{tmp[3]}/{tmp[4]}"
+    return Repo(pth) if os.path.exists(f"{pth}") else clone(path, target=pth)
 
 
 def process_repo(path: str) -> List[Dict]:
@@ -125,10 +128,7 @@ def process_repo(path: str) -> List[Dict]:
     return process_walker(repo)
 
 
-def parse_repos_list(url_file: str = "https://gist.githubusercontent.com/"
-                                     "EgorBu/823d01e7f12cb18495891fb752398037/"
-                                     "raw/8b793d61498b76759a552f8f259c616"
-                                     "61dc427ff/repos.txt") -> List[Dict]:
+def parse_repos_list(url_file: str) -> List[Dict]:
     """
     Function downloads .txt file that contains info about processing
     repositories.
@@ -153,24 +153,13 @@ def parse_repos_list(url_file: str = "https://gist.githubusercontent.com/"
     return list_repos
 
 
-def save_file(multiple_commits: List[Dict], output_path: str = "") -> bool:
+def save_file(multiple_commits: List[Dict], output_path: str = "") -> None:
     """
     The function to save the data into file in output_path.
-    Returns True if the info was successfully appended to file, False if
-    the error occurred.
 
     :param multiple_commits: The list of dicts containing each change info.
     :param output_path: The path to file to save info.
-
-    :return: Returns True if the info was successfully appended to file, False
-    if the error occurred.
     """
     json_str = json.dumps(multiple_commits)
-    try:
-        with open(output_path, "a") as output_file:
-            output_file.write(json_str)
-    except IOError as e:
-        print(f"Failed to write to file {output_path}. {e}")
-        return False
-
-    return True
+    with open(output_path, "a") as output_file:
+        output_file.write(json_str)

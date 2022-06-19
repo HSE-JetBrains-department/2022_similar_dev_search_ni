@@ -36,7 +36,7 @@ def get_languages_method(path: str) -> List[str]:
     return result
 
 
-def process_list(list_commits: List[Dict]) -> List[Dict]:
+def classify_languages(list_commits: List[Dict]) -> List[Dict]:
     """
     Sets to each element in list_commits list of languages.
 

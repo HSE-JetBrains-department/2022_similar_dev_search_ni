@@ -50,4 +50,4 @@ jobs:
     - name: GithubApi test
       continue-on-error: true
       run: |
-        python3 -m pytest test_github_api.py --key ${{ secrets.GITHUB_TOKEN }}
+        python3 -m pytest tests/stargzers/test_github_api.py --key ${{ secrets.GITHUB_TOKEN }}

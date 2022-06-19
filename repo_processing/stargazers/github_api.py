@@ -1,6 +1,8 @@
+from typing import Dict
+
 import calendar
-import time
 from collections import Counter
+import time
 
 from github import Github, GithubException, RateLimitExceededException
 
@@ -24,7 +26,8 @@ def rate_limit_sleep(github_instance: Github) -> None:
 
 def process_stargazers(github_token: str, current_repo_name: str,
                        stars_limit: int = 100,
-                       per_page: int = 100) -> Counter:
+                       per_page: int = 100,
+                       top_common: int = 100) -> Dict:
     """
     Function processes all the stargazers of the current_repo_name repository.
     Memorizes starred repos for each stargazer to Counter.
@@ -33,9 +36,10 @@ def process_stargazers(github_token: str, current_repo_name: str,
     :param per_page: per_page param.
     :param current_repo_name: repository name in GitHub.
     :param stars_limit: filtering parameter to process stargazers that starred
+    :param top_common: The number of most popular repos.
     less than stars_limit repos.
 
-    :return: Counter of names of repositories.
+    :return: Counter (Dict) of names of repositories.
     """
 
     github_instance = Github(login_or_token=github_token, per_page=per_page)
@@ -62,4 +66,4 @@ def process_stargazers(github_token: str, current_repo_name: str,
         except GithubException:
             continue
 
-    return global_counter
+    return dict(global_counter.most_common(top_common))
