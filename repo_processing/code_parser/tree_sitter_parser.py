@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import Dict, List
 
 from repo_processing.extractor import REPO_CLONES_DIR
@@ -93,7 +94,7 @@ def setup_tree_sitter_parser() -> None:
 
 
 def process_query(query_str, language: Language, code: bytes,
-                  root_node: Node) -> List[str]:
+                  root_node: Node) -> Counter:
     """
     Processes query using query_str for LANGUAGE.
     :param query_str: query string to extract info.
@@ -101,14 +102,15 @@ def process_query(query_str, language: Language, code: bytes,
     :param code: Part of code represented in bytes(str) utf8 encoding.
     :param root_node: Root of the parsed tree.
 
-    :return: Returns list of queried results.
+    :return: Returns Counter of queried results.
     """
     query = language.query(query_str)
-    return list(set([code[x[0].start_byte: x[0].end_byte].decode() for x in
-                     query.captures(root_node)]))
+
+    return Counter([code[x[0].start_byte: x[0].end_byte].decode() for x in
+                    query.captures(root_node)])
 
 
-def process_tree_sitter(language: str, code: bytes, tree) -> Dict:
+def process_tree_sitter(language: str, code: bytes, tree: Tree) -> Dict:
     """
     Process lines of code returning dict
     :param language: Language instance.
@@ -187,10 +189,10 @@ def parse_file(languages: List[str], path: str) -> Dict:
     if language != "unknown":
         return go_parse(language, code)
 
-    return {"imports": [], "names": []}
+    return {"imports": Counter(), "names": Counter()}
 
 
-def apply_parsing(mapped_repos_list: List[Dict]) -> List[Dict]:
+def collect_names_imports(mapped_repos_list: List[Dict]) -> List[Dict]:
     """
     Sets to each element in mapped_repos_list list of used imports and names.
 
@@ -200,8 +202,8 @@ def apply_parsing(mapped_repos_list: List[Dict]) -> List[Dict]:
     """
     for x in mapped_repos_list:  # tree-sitter
         try:
-            if ("Python" in x["lang"]) or ("JavaScript" in x["lang"]) or (
-                    "Java" in x["lang"]):
+            if ("Python" in x["lang"]) or ("JavaScript" in x["lang"]) or \
+                    ("Java" in x["lang"]):
                 setup_tree_sitter_parser()
                 parsed_d = parse_file(x["lang"], x["path"])
                 x["tree_parse"] = parsed_d

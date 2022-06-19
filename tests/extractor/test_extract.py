@@ -54,7 +54,8 @@ def test_clone_or_instantiate(repo_url: str) -> None:
     """
     clone_or_instantiate(repo_url)
     is_thrown = False
-    repo_name = repo_url[repo_url.rfind("/") + 1:]
+    path = repo_url.split("/")
+    repo_name = f"{path[2]}/{path[3]}"
 
     repo = None
     try:

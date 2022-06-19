@@ -2,12 +2,11 @@ import os
 
 import click
 
-from repo_processing.extractor.extract import process_repo, parse_repos_list, \
-    save_file
-from repo_processing.lang_parser.enry_parser import process_list
-from repo_processing.code_parser.tree_sitter_parser import apply_parsing
-from repo_processing.helper_funcs import reformat_commits_info
-from repo_processing.stargazers.github_api import process_stargazers
+from extractor.extract import process_repo, parse_repos_list, save_file
+from lang_parser.enry_parser import classify_languages
+from code_parser.tree_sitter_parser import collect_names_imports
+from helper_funcs import reformat_commits_info
+from stargazers.github_api import process_stargazers
 
 CLI_COLOR = "red"
 OUT_JSONS = "outjsons"
@@ -24,11 +23,14 @@ def cli() -> None:
 @cli.command()
 @click.option("-output-path", "-o", default="output", type=click.Path(),
               help="The path to file to save changes info.")
-def parse_repos(output_path: str) -> None:
+@click.option("-url", "-u", required=True, type=str,
+              help="The URL to list of repositories")
+def parse_repos(output_path: str, url: str) -> None:
     """
     Function starts pipeline of parsing list of repositories.
     The result saved in file by a give output_path.
     :param output_path: Path to save parsed result.
+    :param url: The URL to list of repositories.
     """
 
     if not os.path.exists(OUT_JSONS):
@@ -42,7 +44,7 @@ def parse_repos(output_path: str) -> None:
         f" {click.style(f'{OUT_JSONS}/%reponame%.json', fg=CLI_COLOR)} "
         f"file.")
     click.echo("Start parsing.")
-    list_repos = parse_repos_list()
+    list_repos = parse_repos_list(url)
     for el in list_repos:
         click.echo(
             f"\t{click.style('Parse {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
@@ -50,14 +52,14 @@ def parse_repos(output_path: str) -> None:
         mapped_repos_list = list({v["commit_id"]: v for v in
                                   mapped_repos_list}.values())  # unique by
         # commit_id
-        mapped_repos_list = process_list(mapped_repos_list)  # enry
-        mapped_repos_list = apply_parsing(mapped_repos_list)  # tree-sitter
+        mapped_repos_list = classify_languages(mapped_repos_list)
+        mapped_repos_list = collect_names_imports(mapped_repos_list)
 
         reformat_commits_info(mapped_repos_list)  # to simdevsearch
 
         # Saving to file named as current repo.
-        path = el["url"]
-        output_name = path[path.rfind("/") + 1:]
+        path = el["url"].split("/")
+        output_name = f"{path[2]}_{path[3]}"  # path[path.rfind("/") + 1:]
         save_file(mapped_repos_list, f"{OUT_JSONS}/{output_name}.json")
         # Saving to global file.
         save_file(mapped_repos_list, f"{output_path}.json")

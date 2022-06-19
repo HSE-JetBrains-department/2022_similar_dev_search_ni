@@ -53,7 +53,7 @@ def test_python_imports(code, expected_imports):
     Testing go_parse function parses used imports, invoked methods and classes
     correctly for Python language.
     """
-    assert sorted(go_parse("python", code)["imports"]) == sorted(
+    assert sorted(list(go_parse("python", code)["imports"].keys())) == sorted(
         list(set(expected_imports)))
 
 
@@ -135,7 +135,7 @@ def test_java_imports(code, expected_imports):
     Testing go_parse function parses used imports, invoked methods and classes
     correctly for Java language.
     """
-    assert sorted(go_parse("java", code)["imports"]) == sorted(
+    assert sorted(list(go_parse("java", code)["imports"].keys())) == sorted(
         list(set(expected_imports)))
 
 
@@ -191,7 +191,7 @@ def test_js_variables(code, expected_names):
     Testing go_parse function parses names of fields, variables, functions
     correctly for JavaScript language.
     """
-    assert sorted(go_parse("javascript", code)["names"]) == sorted(
+    assert sorted(list(go_parse("javascript", code)["names"].keys())) == sorted(
         list(set(expected_names)))
 
 
@@ -207,5 +207,5 @@ def test_js_imports(code, expected_imports):
     Testing go_parse function parses used imports, invoked methods and classes
     correctly for JavaScript language.
     """
-    assert sorted(go_parse("javascript", code)["imports"]) == sorted(
+    assert sorted(list(go_parse("javascript", code)["imports"])) == sorted(
         list(set(expected_imports)))

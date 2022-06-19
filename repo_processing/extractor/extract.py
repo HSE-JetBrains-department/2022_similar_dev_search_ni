@@ -109,7 +109,10 @@ def clone_or_instantiate(path: str) -> Repo:
 
     :return: Repository instance.
     """
-    repo_name = path[path.rfind("/") + 1:]
+    path = path.split("/")
+    if not os.path.exists(path[2]):
+        os.makedirs(path[2])
+    repo_name = f"{path[2]}/{path[3]}"
     pth = f"{REPO_CLONES_DIR}/{repo_name}"
     return Repo(pth) if os.path.exists(pth) else clone(path, target=pth)
 
@@ -125,10 +128,7 @@ def process_repo(path: str) -> List[Dict]:
     return process_walker(repo)
 
 
-def parse_repos_list(url_file: str = "https://gist.githubusercontent.com/"
-                                     "EgorBu/823d01e7f12cb18495891fb752398037/"
-                                     "raw/8b793d61498b76759a552f8f259c616"
-                                     "61dc427ff/repos.txt") -> List[Dict]:
+def parse_repos_list(url_file: str) -> List[Dict]:
     """
     Function downloads .txt file that contains info about processing
     repositories.
