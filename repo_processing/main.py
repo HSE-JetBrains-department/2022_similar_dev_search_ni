@@ -20,25 +20,27 @@ def cli() -> None:
 
 
 @cli.command()
-@click.option("-output-path", "-o", default="output", type=click.Path(),
+@click.option("-output-path", "-o", default="resfolder", type=click.Path(),
               help="The path to directory to save changes info.")
+@click.option("-result-output", "-r", default="output", type=click.Path(),
+              help="The file name to directory to save info for all repos.")
 @click.option("-url", "-u", required=True, type=str,
               help="The URL to list of repositories")
-def parse_repos(output_path: str, url: str) -> None:
+def parse_repos(output_path: str, result_output: str, url: str) -> None:
     """
     Function starts pipeline of parsing list of repositories.
     The result saved in file by a give output_path.
     :param output_path: Path to save parsed result.
+    :param result_output: Name of file to save parsed result for all repos.
     :param url: The URL to list of repositories.
     """
-    output_file_path = "output"
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
     click.echo(
         f"Output will be saved into "
-        f"{click.style(f'{output_file_path}.json', fg=CLI_COLOR)} file.")
+        f"{click.style(f'{result_output}.json', fg=CLI_COLOR)} file.")
     click.echo(
         f"Separate output of every repo will be saved into"
         f" {click.style(f'{output_path}/%reponame%.json', fg=CLI_COLOR)} "
@@ -62,7 +64,7 @@ def parse_repos(output_path: str, url: str) -> None:
         output_name = f"{path[3]}_{path[4]}"  # path[path.rfind("/") + 1:]
         save_file(mapped_repos_list, f"{output_path}/{output_name}.json")
         # Saving to global file.
-        save_file(mapped_repos_list, f"{output_file_path}.json")
+        save_file(mapped_repos_list, f"{result_output}.json")
         click.echo(
             f"\t{click.style('End {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
 
@@ -70,7 +72,7 @@ def parse_repos(output_path: str, url: str) -> None:
 
     click.echo(
         f"Parsing result saved into"
-        f" {click.style(f'{output_file_path}.json', fg=CLI_COLOR)} file.")
+        f" {click.style(f'{result_output}.json', fg=CLI_COLOR)} file.")
 
 
 @cli.command()
