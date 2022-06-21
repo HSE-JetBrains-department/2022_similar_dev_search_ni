@@ -2,14 +2,13 @@ import os
 
 import click
 
-from extractor.extract import process_repo, parse_repos_list, save_file
-from lang_parser.enry_parser import classify_languages
 from code_parser.tree_sitter_parser import collect_names_imports
+from extractor.extract import parse_repos_list, process_repo, save_file
 from helper_funcs import reformat_commits_info
+from lang_parser.enry_parser import classify_languages
 from stargazers.github_api import process_stargazers
 
 CLI_COLOR = "red"
-OUT_JSONS = "../outjsons"
 
 
 @click.group()
@@ -22,7 +21,7 @@ def cli() -> None:
 
 @cli.command()
 @click.option("-output-path", "-o", default="output", type=click.Path(),
-              help="The path to file to save changes info.")
+              help="The path to directory to save changes info.")
 @click.option("-url", "-u", required=True, type=str,
               help="The URL to list of repositories")
 def parse_repos(output_path: str, url: str) -> None:
@@ -32,16 +31,17 @@ def parse_repos(output_path: str, url: str) -> None:
     :param output_path: Path to save parsed result.
     :param url: The URL to list of repositories.
     """
+    output_file_path = "output"
 
-    if not os.path.exists(OUT_JSONS):
-        os.makedirs(OUT_JSONS)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     click.echo(
         f"Output will be saved into "
-        f"{click.style(f'{output_path}.json', fg=CLI_COLOR)} file.")
+        f"{click.style(f'{output_file_path}.json', fg=CLI_COLOR)} file.")
     click.echo(
         f"Separate output of every repo will be saved into"
-        f" {click.style(f'{OUT_JSONS}/%reponame%.json', fg=CLI_COLOR)} "
+        f" {click.style(f'{output_path}/%reponame%.json', fg=CLI_COLOR)} "
         f"file.")
     click.echo("Start parsing.")
     list_repos = parse_repos_list(url)
@@ -60,9 +60,9 @@ def parse_repos(output_path: str, url: str) -> None:
         # Saving to file named as current repo.
         path = el["url"].split("/")
         output_name = f"{path[3]}_{path[4]}"  # path[path.rfind("/") + 1:]
-        save_file(mapped_repos_list, f"{OUT_JSONS}/{output_name}.json")
+        save_file(mapped_repos_list, f"{output_path}/{output_name}.json")
         # Saving to global file.
-        save_file(mapped_repos_list, f"{output_path}.json")
+        save_file(mapped_repos_list, f"{output_file_path}.json")
         click.echo(
             f"\t{click.style('End {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
 
@@ -70,7 +70,7 @@ def parse_repos(output_path: str, url: str) -> None:
 
     click.echo(
         f"Parsing result saved into"
-        f" {click.style(f'{output_path}.json', fg=CLI_COLOR)} file.")
+        f" {click.style(f'{output_file_path}.json', fg=CLI_COLOR)} file.")
 
 
 @cli.command()

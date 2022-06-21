@@ -109,10 +109,12 @@ def clone_or_instantiate(path: str) -> Repo:
 
     :return: Repository instance.
     """
+    if not os.path.exists(REPO_CLONES_DIR):
+        os.makedirs(REPO_CLONES_DIR)
+
     tmp = path.split("/")
     if not os.path.exists(f"{REPO_CLONES_DIR}/{tmp[3]}"):
         os.makedirs(f"{REPO_CLONES_DIR}/{tmp[3]}")
-    # repo_name = f"{tmp[3]}/{tmp[4]}"
     pth = f"{REPO_CLONES_DIR}/{tmp[3]}/{tmp[4]}"
     return Repo(pth) if os.path.exists(f"{pth}") else clone(path, target=pth)
 
