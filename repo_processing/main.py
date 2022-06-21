@@ -4,7 +4,7 @@ import click
 
 from code_parser.tree_sitter_parser import collect_names_imports
 from extractor.extract import parse_repos_list, process_repo, save_file
-from helper_funcs import reformat_commits_info, OUTPUT_PATH, REPO_CLONES_DIR, \
+from helper_funcs import OUTPUT_PATH, reformat_commits_info, REPO_CLONES_DIR, \
     RESULT_OUTPUT
 
 from lang_parser.enry_parser import classify_languages
