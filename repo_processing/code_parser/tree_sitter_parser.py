@@ -1,9 +1,8 @@
 from collections import Counter
 from typing import Dict, List
 
-from repo_processing.extractor import REPO_CLONES_DIR
-from repo_processing.extractor.extract import clone_or_instantiate
 from repo_processing.code_parser import PARSER_DIR
+from repo_processing.extractor.extract import clone_or_instantiate
 from repo_processing.lang_parser.enry_parser import get_content
 
 from tree_sitter import Language, Parser, Tree
@@ -69,26 +68,33 @@ member_expression) @name) (class_declaration name: (identifier) @name) (
 function_declaration name: (identifier) @name) """
 
 
-def setup_tree_sitter_parser() -> None:
+def setup_tree_sitter_parser(repo_clones_dir: str) -> None:
     """
     Function sets up the parser for Python, JavaScript and Java languages
     cloning the repositories, that contain grammars.
+    :param repo_clones_dir: Path to clone repos.
 
     :return: Returns parser.
     """
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-python")
+        "https://github.com/tree-sitter/tree-sitter-python",
+        repo_clones_dir
+    )
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-javascript")
+        "https://github.com/tree-sitter/tree-sitter-javascript",
+        repo_clones_dir
+    )
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-java")
+        "https://github.com/tree-sitter/tree-sitter-java",
+        repo_clones_dir
+    )
 
     Language.build_library(
         f"{PARSER_DIR}/build/my-languages.so",
         [
-            f"{REPO_CLONES_DIR}/tree-sitter-python",
-            f"{REPO_CLONES_DIR}/tree-sitter-javascript",
-            f"{REPO_CLONES_DIR}/tree-sitter-java"
+            f"{repo_clones_dir}/tree-sitter-python",
+            f"{repo_clones_dir}/tree-sitter-javascript",
+            f"{repo_clones_dir}/tree-sitter-java"
         ]
     )
 
@@ -192,11 +198,13 @@ def parse_file(languages: List[str], path: str) -> Dict:
     return {"imports": Counter(), "names": Counter()}
 
 
-def collect_names_imports(mapped_repos_list: List[Dict]) -> List[Dict]:
+def collect_names_imports(mapped_repos_list: List[Dict],
+                          repo_clones_dir: str) -> List[Dict]:
     """
     Sets to each element in mapped_repos_list list of used imports and names.
 
     :param mapped_repos_list: List of mapped commits info.
+    :param repo_clones_dir: Path to clone repos.
 
     :return:  List of dictionaries.
     """
@@ -204,7 +212,7 @@ def collect_names_imports(mapped_repos_list: List[Dict]) -> List[Dict]:
         try:
             if ("Python" in x["lang"]) or ("JavaScript" in x["lang"]) or \
                     ("Java" in x["lang"]):
-                setup_tree_sitter_parser()
+                setup_tree_sitter_parser(repo_clones_dir)
                 parsed_d = parse_file(x["lang"], x["path"])
                 x["tree_parse"] = parsed_d
         except FileNotFoundError:  # deleted files.

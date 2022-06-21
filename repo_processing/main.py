@@ -4,7 +4,9 @@ import click
 
 from code_parser.tree_sitter_parser import collect_names_imports
 from extractor.extract import parse_repos_list, process_repo, save_file
-from helper_funcs import reformat_commits_info
+from helper_funcs import reformat_commits_info, OUTPUT_PATH, REPO_CLONES_DIR, \
+    RESULT_OUTPUT
+
 from lang_parser.enry_parser import classify_languages
 from stargazers.github_api import process_stargazers
 
@@ -20,18 +22,22 @@ def cli() -> None:
 
 
 @cli.command()
-@click.option("-output-path", "-o", default="resfolder", type=click.Path(),
+@click.option("-output-path", "-o", default=OUTPUT_PATH, type=click.Path(),
               help="The path to directory to save changes info.")
-@click.option("-result-output", "-r", default="output", type=click.Path(),
+@click.option("-result-output", "-r", default=RESULT_OUTPUT, type=click.Path(),
               help="The file name to directory to save info for all repos.")
+@click.option("-clonesdir", "-c", default=REPO_CLONES_DIR, type=click.Path(),
+              help="The path to directory to clone repos.")
 @click.option("-url", "-u", required=True, type=str,
               help="The URL to list of repositories")
-def parse_repos(output_path: str, result_output: str, url: str) -> None:
+def parse_repos(output_path: str, result_output: str, clonesdir: str,
+                url: str) -> None:
     """
     Function starts pipeline of parsing list of repositories.
     The result saved in file by a give output_path.
     :param output_path: Path to save parsed result.
     :param result_output: Name of file to save parsed result for all repos.
+    :param clonesdir: Path to clone repos.
     :param url: The URL to list of repositories.
     """
 
@@ -55,13 +61,13 @@ def parse_repos(output_path: str, result_output: str, url: str) -> None:
                                   mapped_repos_list}.values())  # unique by
         # commit_id
         mapped_repos_list = classify_languages(mapped_repos_list)
-        mapped_repos_list = collect_names_imports(mapped_repos_list)
+        mapped_repos_list = collect_names_imports(mapped_repos_list, clonesdir)
 
         reformat_commits_info(mapped_repos_list)  # to simdevsearch
 
         # Saving to file named as current repo.
         path = el["url"].split("/")
-        output_name = f"{path[3]}_{path[4]}"  # path[path.rfind("/") + 1:]
+        output_name = f"{path[3]}_{path[4]}"
         save_file(mapped_repos_list, f"{output_path}/{output_name}.json")
         # Saving to global file.
         save_file(mapped_repos_list, f"{result_output}.json")

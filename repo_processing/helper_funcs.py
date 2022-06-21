@@ -1,5 +1,9 @@
 from typing import Dict, List
 
+REPO_CLONES_DIR = "../clonedrepos"
+RESULT_OUTPUT = "output"
+OUTPUT_PATH = "resfolder"
+
 
 def reformat_commits_info(mapped_repos_list: List[Dict]) -> Dict:
     """

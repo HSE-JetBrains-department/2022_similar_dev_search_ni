@@ -10,8 +10,6 @@ from dulwich.repo import Repo
 
 from typing import Dict, List, Tuple
 
-from repo_processing.extractor import REPO_CLONES_DIR
-
 
 def count_diff(blob_old: Blob, blob_new: Blob) -> Tuple[int, int]:
     """
@@ -101,21 +99,22 @@ def process_walker(repo: Repo) -> List[Dict]:
     return multiple_commits
 
 
-def clone_or_instantiate(path: str) -> Repo:
+def clone_or_instantiate(path: str, repo_cloned_dir: str) -> Repo:
     """
     Function cloned repo, if it is not existed, otherwise instantiate
     the existing one.
-    :param: The path in local directory or url to GitHub repository.
+    :param path: The path in local directory or url to GitHub repository.
+    :param repo_cloned_dir: The path to save all the cloned repos.
 
     :return: Repository instance.
     """
-    if not os.path.exists(REPO_CLONES_DIR):
-        os.makedirs(REPO_CLONES_DIR)
+    if not os.path.exists(repo_cloned_dir):
+        os.makedirs(repo_cloned_dir)
 
     tmp = path.split("/")
-    if not os.path.exists(f"{REPO_CLONES_DIR}/{tmp[3]}"):
-        os.makedirs(f"{REPO_CLONES_DIR}/{tmp[3]}")
-    pth = f"{REPO_CLONES_DIR}/{tmp[3]}/{tmp[4]}"
+    if not os.path.exists(f"{repo_cloned_dir}/{tmp[3]}"):
+        os.makedirs(f"{repo_cloned_dir}/{tmp[3]}")
+    pth = f"{repo_cloned_dir}/{tmp[3]}/{tmp[4]}"
     return Repo(pth) if os.path.exists(f"{pth}") else clone(path, target=pth)
 
 
