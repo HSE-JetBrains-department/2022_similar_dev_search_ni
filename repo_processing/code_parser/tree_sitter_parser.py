@@ -1,13 +1,14 @@
 from collections import Counter
 from typing import Dict, List
 
-from repo_processing.extractor import REPO_CLONES_DIR
-from repo_processing.extractor.extract import clone_or_instantiate
 from repo_processing.code_parser import PARSER_DIR
+from repo_processing.extractor.extract import clone_or_instantiate
+from repo_processing.helper_funcs import REPO_CLONES_DIR
 from repo_processing.lang_parser.enry_parser import get_content
 
 from tree_sitter import Language, Parser, Tree
 from tree_sitter import Node
+
 
 # query of imports, used methods, classes
 JAVA_IMPORTS_USED_METHODS_QUERY_STRING = """(import_declaration (
@@ -77,11 +78,17 @@ def setup_tree_sitter_parser() -> None:
     :return: Returns parser.
     """
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-python")
+        "https://github.com/tree-sitter/tree-sitter-python",
+        REPO_CLONES_DIR
+    )
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-javascript")
+        "https://github.com/tree-sitter/tree-sitter-javascript",
+        REPO_CLONES_DIR
+    )
     clone_or_instantiate(
-        "https://github.com/tree-sitter/tree-sitter-java")
+        "https://github.com/tree-sitter/tree-sitter-java",
+        REPO_CLONES_DIR
+    )
 
     Language.build_library(
         f"{PARSER_DIR}/build/my-languages.so",
