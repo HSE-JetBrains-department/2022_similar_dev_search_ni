@@ -118,14 +118,15 @@ def clone_or_instantiate(path: str, repo_cloned_dir: str) -> Repo:
     return Repo(pth) if os.path.exists(f"{pth}") else clone(path, target=pth)
 
 
-def process_repo(path: str) -> List[Dict]:
+def process_repo(path: str, repo_cloned_dir: str) -> List[Dict]:
     """
     Function starts to process repository by a given path.
     :param path: The path in local directory or url to GitHub repository.
+    :param repo_cloned_dir: The path to save all the cloned repos.
 
     :return: Returns list of mapped commits info.
     """
-    repo = clone_or_instantiate(path)
+    repo = clone_or_instantiate(path, repo_cloned_dir)
     return process_walker(repo)
 
 

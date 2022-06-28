@@ -92,9 +92,9 @@ def setup_tree_sitter_parser(repo_clones_dir: str) -> None:
     Language.build_library(
         f"{PARSER_DIR}/build/my-languages.so",
         [
-            f"{repo_clones_dir}/tree-sitter-python",
-            f"{repo_clones_dir}/tree-sitter-javascript",
-            f"{repo_clones_dir}/tree-sitter-java"
+            f"{repo_clones_dir}/tree-sitter/tree-sitter-python",
+            f"{repo_clones_dir}/tree-sitter/tree-sitter-javascript",
+            f"{repo_clones_dir}/tree-sitter/tree-sitter-java"
         ]
     )
 

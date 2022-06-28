@@ -55,8 +55,8 @@ def parse_repos(output_path: str, result_output: str, clonesdir: str,
     list_repos = parse_repos_list(url)
     for el in list_repos:
         click.echo(
-            f"\t{click.style('Parse {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
-        mapped_repos_list = process_repo(el["url"])  # dulwich
+            f"\n{click.style('Parse {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
+        mapped_repos_list = process_repo(el["url"], clonesdir)  # dulwich
         mapped_repos_list = list({v["commit_id"]: v for v in
                                   mapped_repos_list}.values())  # unique by
         # commit_id
@@ -72,7 +72,7 @@ def parse_repos(output_path: str, result_output: str, clonesdir: str,
         # Saving to global file.
         save_file(mapped_repos_list, f"{result_output}.json")
         click.echo(
-            f"\t{click.style('End {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
+            f"\n{click.style('End {0}.'.format(el['url']), fg=CLI_COLOR)}\n")
 
     click.echo("Parsing completed. Saving to file...")
 
