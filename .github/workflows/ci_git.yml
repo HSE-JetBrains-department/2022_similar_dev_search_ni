@@ -1,8 +1,6 @@
 name: ci_git
 
-on:
-  - push
-  - pull_request
+on: [push, pull_request]
 
 jobs:
   build:
@@ -43,9 +41,3 @@ jobs:
       continue-on-error: true
       run: |
         python3 -m pytest tests/code_parser/test_tree_sitter_parser.py
-    - name: Enry test
-      continue-on-error: true
-      run: |
-        python3 -m pytest tests/lang_parser/test_enry_parser.py
-    - name: GithubApi test
-      continue-on-error: true
